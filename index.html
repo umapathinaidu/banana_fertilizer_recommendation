@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fertilizer Recommendation for Banana Plant</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('banana1.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+    #header {
+      margin-bottom: 20px;
+    }
+    #content {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.8); 
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      box-sizing: border-box;
+      margin: 50px auto; 
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 5px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      background-color: #3498db;
+      color: #fff;
+    }
+    .btn:hover {
+      background-color: #2980b9;
+    }
+    input, select {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 80%;
+      box-sizing: border-box;
+    }
+    h2 {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>Fertilizer Recommendation for Banana Plant</h1>
+  </div>
+
+  <div id="content">
+    <!-- Content will be dynamically populated based on actions -->
+  </div>
+
+  <script>
+    const users = [];
+    let currentUser = null;
+
+    const fertilizerBrands = {
+      'Urea': 'Nagarjuna Fertilizers and Chemicals Limited',
+      'Ammonium Nitrate': 'Coromandel',
+      'Potassium Nitrate': 'Andhra Pradesh State Fertilizers and Chemicals Limited (APSFCL)',
+      'Single Super Phosphate': 'Zuari Fertilizers and Chemicals Limited',
+      'Triple Super Phosphate': 'Coromandel',
+      'Diammonium Phosphate': 'Nagarjuna Fertilizers and Chemicals Limited',
+      'Sulphate of Potash': 'Andhra Pradesh State Fertilizers and Chemicals Limited (APSFCL)',
+      'Muriate of Potash': 'Zuari Fertilizers and Chemicals Limited',
+      'Potassium Sulfate': 'Coromandel',
+      'Vermicompost': 'Zuari Fertilizers and Chemicals Limited',
+      'Bone Meal': 'Zuari Fertilizers and Chemicals Limited',
+      'Fish Emulsion': 'Nagarjuna Fertilizers and Chemicals Limited',
+      'Calcium Nitrate': 'Coromandel',
+      'Magnesium Sulfate': 'Andhra Pradesh State Fertilizers and Chemicals Limited (APSFCL)',
+      'Iron Chelate': 'Zuari Fertilizers and Chemicals Limited',
+      'Phosphorus': 'Nagarjuna Fertilizers and Chemicals Limited',
+      'Calcium': 'Coromandel',
+      'Magnesium': 'Andhra Pradesh State Fertilizers and Chemicals Limited (APSFCL)'
+    };
+
+    const conditions = {
+      'Fusarium Wilt': {
+        'Sulphur': 'Vermicompost',
+        'Nitrogen': 'Ammonium Nitrate',
+        'Potassium': 'Potassium Nitrate',
+        'Phosphorus': 'Phosphorus',
+        'Calcium': 'Calcium',
+        'Magnesium': 'Magnesium'
+      },
+      'Bacterial Wilt': {
+        'Sulphur': 'Single Super Phosphate',
+        'Nitrogen': 'Triple Super Phosphate',
+        'Potassium': 'Diammonium Phosphate',
+        'Phosphorus': 'Phosphorus',
+        'Calcium': 'Calcium',
+        'Magnesium': 'Magnesium'
+      },
+      'Yellow Sigatoka': {
+        'Sulphur': 'Sulphate of Potash',
+        'Nitrogen': 'Muriate of Potash',
+        'Potassium': 'Potassium Sulfate',
+        'Phosphorus': 'Phosphorus',
+        'Calcium': 'Calcium',
+        'Magnesium': 'Magnesium'
+      },
+      'Root Knot Nematodes': {
+        'Sulphur': 'Vermicompost',
+        'Nitrogen': 'Bone Meal',
+        'Potassium': 'Fish Emulsion',
+        'Phosphorus': 'Phosphorus',
+        'Calcium': 'Calcium',
+        'Magnesium': 'Magnesium'
+      }
+    };
+
+    function showLogin() {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <h2>Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username"><br>
+        <input type="password" id="loginPassword" placeholder="Password"><br>
+        <button class="btn" onclick="login()">Login</button>
+        <p>Don't have an account? <a href="#" onclick="showSignup()">Sign Up</a></p>
+        <p><a href="#" onclick="showResetPassword()">Forgot your password?</a></p>
+      `;
+    }
+
+    function showSignup() {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <h2>Sign Up</h2>
+        <input type="text" id="signupUsername" placeholder="Username"><br>
+        <input type="email" id="signupEmail" placeholder="Email"><br>
+        <input type="password" id="signupPassword" placeholder="Password"><br>
+        <button class="btn" onclick="signup()">Sign Up</button>
+        <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+      `;
+    }
+
+    function showResetPassword() {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <h2>Reset Password</h2>
+        <input type="email" id="resetEmail" placeholder="Email"><br>
+        <button class="btn" onclick="resetPassword()">Reset Password</button>
+        <p>Go back to <a href="#" onclick="showLogin()">login</a>.</p>
+      `;
+    }
+
+    function showClassification(user) {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <h2>Welcome, ${user.username}!</h2>
+        <form id="inputForm">
+          <p>Select the disease affecting your plant:</p>
+          <select id="diseaseSelect">
+            <option value="" disabled selected>Select a disease</option>
+            ${Object.keys(conditions).map(condition => `<option value="${condition}">${condition}</option>`).join('')}
+          </select>
+
+          <p>Select the mineral:</p>
+          <select id="mineralSelect">
+            <option value="" disabled selected>Select a mineral</option>
+            <option value="Sulphur">Sulphur</option>
+            <option value="Nitrogen">Nitrogen</option>
+            <option value="Potassium">Potassium</option>
+            <option value="Phosphorus">Phosphorus</option>
+            <option value="Calcium">Calcium</option>
+            <option value="Magnesium">Magnesium</option>
+          </select>
+
+          <p>Select depression level:</p>
+          <select id="depressionSelect">
+            <option value="" disabled selected>Select a depression level</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+
+          <p>Select the plant size:</p>
+          <select id="sizeSelect">
+            <option value="" disabled selected>Select plant size</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+          </select>
+
+          <button class="btn" type="button" onclick="getFertilizer()">Get Recommendation</button>
+        </form>
+        <button id="logoutBtn" class="btn" onclick="logout()" style="display: none;">Logout</button>
+        <button id="reEnterBtn" class="btn" onclick="reEnterInputs()" style="display: none;">Re-enter Inputs</button>
+        <div id="fertilizerResult"></div>
+      `;
+    }
+
+    function reEnterInputs() {
+      const content = document.getElementById('content');
+      content.innerHTML = '';
+      showClassification(currentUser);
+    }
+
+    function getFertilizer() {
+      const diseaseSelect = document.getElementById('diseaseSelect');
+      const mineralSelect = document.getElementById('mineralSelect');
+      const depressionSelect = document.getElementById('depressionSelect');
+      const sizeSelect = document.getElementById('sizeSelect');
+      const fertilizerResult = document.getElementById('fertilizerResult');
+      const selectedDisease = diseaseSelect.value;
+      const selectedMineral = mineralSelect.value;
+      const selectedDepression = depressionSelect.value;
+      const selectedSize = sizeSelect.value;
+
+      let recommendation = '';
+
+      if (selectedDisease && selectedMineral && selectedDepression && selectedSize) {
+        const fertilizerOptions = conditions[selectedDisease];
+        if (fertilizerOptions) {
+          const selectedFertilizer = fertilizerOptions[selectedMineral];
+          if (selectedFertilizer) {
+            const selectedBrand = fertilizerBrands[selectedFertilizer];
+            recommendation = `Recommended fertilizer for ${selectedDisease} with ${selectedMineral}, depression level less than ${selectedDepression}, and plant size ${selectedSize}: ${selectedFertilizer} by ${selectedBrand}`;
+            fertilizerResult.innerHTML = recommendation;
+            document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+            document.getElementById('reEnterBtn').style.display = 'block';
+          } else {
+            recommendation = 'No recommendation available for the selected mineral and disease combination.';
+          }
+        } else {
+          recommendation = 'No recommendation available for the selected disease.';
+        }
+      } else {
+        recommendation = 'Please select valid inputs.';
+      }
+
+      fertilizerResult.innerHTML = recommendation;
+    }
+
+    function signup() {
+      const username = document.getElementById('signupUsername').value;
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+
+      users.push({ username, email, password });
+
+      alert('Sign-up successful! You can now log in.');
+      showLogin();
+    }
+
+    function resetPassword() {
+      const email = document.getElementById('resetEmail').value;
+      alert('Password reset link sent to your email.');
+      showLogin();
+    }
+
+    function login() {
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const user = users.find(u => u.username === username && u.password === password);
+
+      if (user) {
+        currentUser = user;
+        showClassification(user);
+      } else {
+        alert('Invalid username or password. Please try again.');
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      showLogin();
+    }
+
+    showLogin();
+  </script>
+</body>
+</html>
